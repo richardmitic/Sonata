@@ -19,9 +19,9 @@ use sonata_core::formats::Packet;
 use sonata_core::io::*;
 use sonata_core::meta::{MetadataQueue, MetadataBuilder};
 use sonata_core::probe::{Descriptor, Instantiate, QueryDescriptor};
+use sonata_utils_xiph::flac::metadata::*;
 
 use super::decoder::PacketParser;
-use super::metadata::*;
 
 /// The FLAC start of stream marker: "fLaC" in ASCII.
 const FLAC_STREAM_MARKER: [u8; 4] = *b"fLaC";
