@@ -19,7 +19,7 @@ pub mod prelude {
 
     pub use crate::units::{Duration, TimeBase, TimeStamp};
 
-    pub use super::{Cue, FormatOptions, FormatReader, Packet, SeekMode, SeekTo, SeekedTo, Track};
+    pub use super::{Cue, FormatOptions, FormatReader, Packet, SeekMode, SeekTo, SeekedTo, StreamingFormatReader, Track};
 }
 
 /// `SeekTo` specifies a position to seek to.
@@ -211,6 +211,17 @@ pub trait FormatReader: Send + Sync {
 
     /// Destroys the `FormatReader` and returns the underlying media source stream
     fn into_inner(self: Box<Self>) -> MediaSourceStream;
+}
+
+pub trait StreamingFormatReader {
+
+    /// Try to get the next packet from the container.
+    /// 
+    /// If the underlying MediaSourceStream returns EWOULDBLOCK when trying to read bytes,
+    /// this function will return `MoreDataRequired` and the application retry when more
+    /// data is available.
+    fn try_next_packet(&mut self) -> Result<Packet>;
+
 }
 
 /// A `Packet` contains a discrete amount of encoded data for a single codec bitstream. The exact

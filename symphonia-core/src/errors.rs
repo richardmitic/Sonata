@@ -52,6 +52,8 @@ pub enum Error {
     LimitError(&'static str),
     /// The demuxer or decoder needs to be reset before continuing.
     ResetRequired,
+    /// More data is required. The same action should be retried once more data is available.
+    MoreDataRequired,
 }
 
 impl fmt::Display for Error {
@@ -73,6 +75,9 @@ impl fmt::Display for Error {
             Error::ResetRequired => {
                 write!(f, "decoder needs to be reset")
             }
+            Error::MoreDataRequired => {
+                write!(f, "more data required")
+            }
         }
     }
 }
@@ -86,6 +91,7 @@ impl std::error::Error for Error {
             Error::Unsupported(_) => None,
             Error::LimitError(_) => None,
             Error::ResetRequired => None,
+            Error::MoreDataRequired => None,
         }
     }
 }

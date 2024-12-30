@@ -9,7 +9,7 @@ use symphonia_core::support_format;
 
 use symphonia_core::checksum::Crc16AnsiLe;
 use symphonia_core::codecs::CodecParameters;
-use symphonia_core::errors::{seek_error, Result, SeekErrorKind};
+use symphonia_core::errors::{seek_error, Result, SeekErrorKind, Error};
 use symphonia_core::formats::prelude::*;
 use symphonia_core::io::*;
 use symphonia_core::meta::{Metadata, MetadataLog};
@@ -457,6 +457,31 @@ impl MpaReader {
 
         Ok(())
     }
+}
+
+impl StreamingFormatReader for MpaReader {
+    fn try_next_packet(&mut self) -> Result<Packet> {
+
+        // Store current position in case we need to seek back to it
+        let seekback_pos = self.reader.pos();
+        
+        self.next_packet()
+            .map_err(|error| {
+                match error {
+                    Error::IoError(ref err) if err.kind() == std::io::ErrorKind::WouldBlock => {
+                        let seeked_to = self.reader.seek_buffered(seekback_pos);
+                        if seekback_pos == seeked_to {
+                            return Error::MoreDataRequired
+                        } else {
+                            return error;
+                        }
+                        // TODO: Try an unbuffered seek of the underlying source
+                    }
+                    _ => error
+                }
+            })
+    }
+
 }
 
 /// Reads a MPEG frame and returns the header and buffer.
